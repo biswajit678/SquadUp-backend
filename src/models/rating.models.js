@@ -1,31 +1,31 @@
 import mongoose from "mongoose";
 
-const RatingSchema = new mongoose.Schema({
+const ratingSchema = new mongoose.Schema({
     gameId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Game',
         required: true,
-        index: true,
-
+        index: true 
     },
-
     sport: {
         type: String,
         required: true,
-        index: true
+        index: true 
     },
     reviewerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
+        index: true 
     },
     reviewedPlayerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
+        index: true 
     },
     rating: {
-        type: String,
+        type: Number,
         required: true,
         min: 1,
         max: 5
@@ -34,11 +34,13 @@ const RatingSchema = new mongoose.Schema({
         type: String,
         maxlength: 1000
     }
+}, { timestamps: true });
 
-})
+ratingSchema.index({ reviewedPlayerId: 1, sport: 1 });
+ratingSchema.index({ reviewerId: 1, gameId: 1 }); 
 
-const model=mongoose.model('Rating',RatingSchema)
+ratingSchema.index({ gameId: 1, reviewerId: 1, reviewedPlayerId: 1 }, { unique: true });
 
-module.exports={
-    model
-}
+const Rating = mongoose.model("Rating", ratingSchema);
+
+export default Rating;

@@ -1,16 +1,16 @@
-const mongoose=require('mongoose')
+import mongoose from "mongoose";
 
 const gameSchema = new mongoose.Schema({
     creator: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'user',
-        required: true
-
+        ref: 'User',
+        required: true,
+        index: true 
     },
     sport: {
         type: String,
         required: true,
-        index: true
+        index: true 
     },
     title: {
         type: String,
@@ -24,16 +24,21 @@ const gameSchema = new mongoose.Schema({
     date: {
         type: Date,
         required: true,
+        index: true 
     },
     duration: {
         type: Number,
-        default: 60
+        default: 60 
     },
     location: {
-        venuName: String,
+        venueName: String,
         address: {
             type: String,
             required: true
+        },
+        city: {
+            type: String,
+            index: true 
         }
     },
     playersNeeded: {
@@ -44,44 +49,42 @@ const gameSchema = new mongoose.Schema({
     currentPlayers: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'user'
+            ref: 'User'
         }
     ],
     skillLevel: {
         type: String,
-        enum: ['any', 'beginnner', 'intermediate', 'advanced'],
-        default: 'any'
+        enum: ['any', 'beginner', 'intermediate', 'advanced'],
+        default: 'any',
+        index: true 
     },
     status: {
         type: String,
         enum: ['open', 'full', 'completed', 'cancelled'],
         default: 'open',
-        index: true
+        index: true 
     },
     invitedPlayers: [{
-        type: mongoose.Schema.Types.String,
-        ref: 'user'
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }],
-
     completedAt: Date,
-
     attendance: [{
         playerId: {
-            type: mongoose.Schema.Types.String,
-            ref: 'user'
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
         },
-        status:{
-            type:String,
-            enum:['attended','no-show']
+        status: {
+            type: String,
+            enum: ['attended', 'no-show']
         }
-    }],
+    }]
+}, { timestamps: true });
 
+gameSchema.index({ sport: 1, date: 1, status: 1 }); 
+gameSchema.index({ 'location.city': 1, sport: 1, date: 1 }); 
+gameSchema.index({ creator: 1, status: 1 }); 
 
+const Game = mongoose.model("Game", gameSchema);
 
-},{timestamps:true});
-
-const model=mongoose.model("Game",game);
-
-module.exports={
-    model
-}
+export default Game;
