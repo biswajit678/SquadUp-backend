@@ -20,7 +20,7 @@ export const Signup = async (req, res) => {
         }
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        
+
         const newUser = await User.create({
             name,
             email,
@@ -67,3 +67,60 @@ export const login = async (req, res) => {
         res.status(500).json({ message: "Server Error", error: error.message });
     }
 };
+
+export const updateProfile = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { availability, bio, location, sports } = req.body;
+
+        const user = await User.findById({ userId })
+            .select("-password");
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "User not Exist"
+            })
+        }
+
+        if (bio !== undefined) user.bio = bio;
+        if (location) user.location = location;
+        if (sports) user.sports = sports;
+        if (availability) user.availability = availability;
+
+        await user.save();
+
+        return res.json(200).json({
+            success: true,
+            message: "profile updated successfully",
+            data: user
+        })
+
+    } catch (error) {
+        res.status(500).json({ message: "Server Error", error: error.message });
+    }
+
+}
+
+export const getCurrentUser = async (req, res) => {
+    try {
+        const userId = req.user._id;
+
+        const user = await User.findById({ userId })
+            .select("-password");
+
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "User not Exist"
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: user
+        })
+
+    } catch (error) {
+        res.status(500).json({ message: "Server Error", error: error.message });
+    }
+}
