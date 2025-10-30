@@ -15,6 +15,7 @@ export const Signup = async (req, res) => {
             return res.status(400).json({ message: "All fields are required" });
         }
         const user = await User.findOne({ email });
+
         if (user) {
             return res.status(400).json({ message: "User Already Exist" });
         }
@@ -73,7 +74,7 @@ export const updateProfile = async (req, res) => {
         const userId = req.user._id;
         const { availability, bio, location, sports } = req.body;
 
-        const user = await User.findById({ userId })
+        const user = await User.findById( userId )
             .select("-password");
         if (!user) {
             return res.status(401).json({
@@ -89,7 +90,7 @@ export const updateProfile = async (req, res) => {
 
         await user.save();
 
-        return res.json(200).json({
+        return res.status(200).json({
             success: true,
             message: "profile updated successfully",
             data: user
