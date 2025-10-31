@@ -2,7 +2,7 @@ import Game from "../models/game.models"
 
 export const createGame = async (req, res) => {
     try {
-        const userId = req.user._id
+        const userId = req.user._id;
 
         const {
             sport,
@@ -13,10 +13,10 @@ export const createGame = async (req, res) => {
             location,
             playersNeeded,
             skillLevel
+        } = req.body;
 
-        } = req.body
         if (!sport || !title || !description || !date || !duration || !location || !playersNeeded || !skillLevel) {
-            res.status(400).json({ message: "You have missed Something" })
+            return res.status(400).json({ message: "You have missed Something" })
         }
 
         const newgame = new Game({
@@ -28,17 +28,28 @@ export const createGame = async (req, res) => {
             duration,
             location,
             playersNeeded,
+            currentPlayers: [userId],
             skillLevel
+        });
+
+        await newgame.save();
+
+        return res.status(201).json({
+            success: true,
+            message: "Game created successfully",
+            data: newgame
         })
-        await newgame.save()
     } catch (error) {
-        res.status(500).json({ message: "Server error" })
+        console.error("Create game error:", error)
+        return res.status(500).json({ message: "Server error", error: error.message })
     }
 }
 
 export const updateGame = async (req, res) => {
     try {
-        const urerId = req.user._id
+        const userId = req.user._id;
+        const gameId = req.params.gameId;
+
         const {
             sport,
             title,
@@ -48,57 +59,69 @@ export const updateGame = async (req, res) => {
             location,
             playersNeeded,
             skillLevel
-        } = req.body
+        } = req.body;
 
-        const game = await Game.findById(userId).select("-password")
+        const game = await Game.findById(gameId);
 
         if (!game) {
-            return res.status(401).json({ message: "" })
+            return res.status(404).json({ message: "Game not found" })
         }
-        if (!sport) game.sport = sport
-        if (!title) game.title = title
-        if (!description) game.description = description
-        if (!date) game.date = date
-        if (!duration) game.duration = duration
-        if (!location) game.location = location
-        if (!playersNeeded) game.playersNeeded = playersNeeded
-        if (!skillLevel) game.skillLevel = skillLevel
 
-        const updatedGames = await game.save()
-        return res.status(200).json({ message: "Games Updated Successfully" })
+        if (game.creator.toString() !== userId.toString()) {
+            return res.status(403).json({ message: "Unauthorized to update this game" })
+        }
+
+        if (sport) game.sport = sport;
+        if (title) game.title = title;
+        if (description) game.description = description;
+        if (date) game.date = date;
+        if (duration) game.duration = duration;
+        if (location) game.location = location;
+        if (playersNeeded) game.playersNeeded = playersNeeded;
+        if (skillLevel) game.skillLevel = skillLevel;
+
+        const updatedGame = await game.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Game updated successfully",
+            data: updatedGame
+        })
     } catch (error) {
-        res.status(500).json({ message: "Server Error" })
+        console.error("Update game error:", error)
+        return res.status(500).json({ message: "Server Error", error: error.message })
     }
 }
 
 export const getAllGames = async (req, res) => {
     try {
-        const games = await Game.find();
-        if (!games) {
-            return res.status(400).json({
-                success: false,
-                message: "no game found"
-            })
-        }
+        const games = await Game.find()
+            .populate('creator', 'username email')
+            .sort({ date: 1 });
+
         return res.status(200).json({
             success: true,
+            count: games.length,
             data: games
         })
     } catch (error) {
-        res.status(500).json({ message: "Server Error", error: error.message });
+        console.error("Get all games error:", error)
+        return res.status(500).json({ message: "Server Error", error: error.message })
     }
 }
 
 export const getGameById = async (req, res) => {
     try {
-        const gameId = req.params;
+        const gameId = req.params.gameId;
 
-        const game = await Game.findById(gameId);
+        const game = await Game.findById(gameId)
+            .populate('creator', 'username email')
+            .populate('currentPlayers', 'username email');
 
         if (!game) {
-            return res.status(400).json({
+            return res.status(404).json({
                 success: false,
-                message: "no game found"
+                message: "Game not found"
             })
         }
 
@@ -108,38 +131,39 @@ export const getGameById = async (req, res) => {
         })
 
     } catch (error) {
-        res.status(500).json({ message: "Server Error", error: error.message });
+        console.error("Get game by id error:", error)
+        return res.status(500).json({ message: "Server Error", error: error.message })
     }
 }
 
 export const cancelGame = async (req, res) => {
     try {
         const { status } = req.body;
-        const gameId = req.params;
+        const gameId = req.params.gameId;
         const userId = req.user._id;
 
-
-        const gameStatuses = ['open', 'full', 'completed', 'cancelled'];
+        const gameStatuses = ['open', 'full', 'completed', 'cancelled']
 
         if (!gameStatuses.includes(status)) {
             return res.status(400).json({
                 success: false,
-                message: "not a valid status"
+                message: "Not a valid status"
             })
         }
 
         const game = await Game.findById(gameId);
+
         if (!game) {
-            return res.status(400).json({
+            return res.status(404).json({
                 success: false,
-                message: "no game found"
+                message: "Game not found"
             })
         }
 
-        if (userId !== game._id.toString()) {
-            return res.status(400).json({
+        if (userId.toString() !== game.creator.toString()) {
+            return res.status(403).json({
                 success: false,
-                message: "you dont have access to this game"
+                message: "You don't have access to modify this game"
             })
         }
 
@@ -148,11 +172,11 @@ export const cancelGame = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "game cancelled"
+            message: `Game status updated to ${status}`
         })
 
-
     } catch (error) {
-        res.status(500).json({ message: "Server Error", error: error.message });
+        console.error("Cancel game error:", error)
+        return res.status(500).json({ message: "Server Error", error: error.message })
     }
 }
