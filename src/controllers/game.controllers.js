@@ -63,6 +63,12 @@ export const updateGame = async (req, res) => {
 
         const game = await Game.findById(gameId);
 
+        if (['completed', 'cancelled'].includes(game.status)) {
+            return res.status(400).json({
+                message: "Cannot update a completed or cancelled game"
+            });
+        }
+
         if (!game) {
             return res.status(404).json({ message: "Game not found" })
         }
@@ -92,50 +98,6 @@ export const updateGame = async (req, res) => {
         return res.status(500).json({ message: "Server Error", error: error.message })
     }
 }
-
-export const getAllGames = async (req, res) => {
-    try {
-        const games = await Game.find()
-            .populate('creator', 'username email')
-            .sort({ date: 1 });
-
-        return res.status(200).json({
-            success: true,
-            count: games.length,
-            data: games
-        })
-    } catch (error) {
-        console.error("Get all games error:", error)
-        return res.status(500).json({ message: "Server Error", error: error.message })
-    }
-}
-
-export const getGameById = async (req, res) => {
-    try {
-        const gameId = req.params.gameId;
-
-        const game = await Game.findById(gameId)
-            .populate('creator', 'username email')
-            .populate('currentPlayers', 'username email');
-
-        if (!game) {
-            return res.status(404).json({
-                success: false,
-                message: "Game not found"
-            })
-        }
-
-        return res.status(200).json({
-            success: true,
-            data: game
-        })
-
-    } catch (error) {
-        console.error("Get game by id error:", error)
-        return res.status(500).json({ message: "Server Error", error: error.message })
-    }
-}
-
 export const cancelGame = async (req, res) => {
     try {
         const { status } = req.body;
@@ -181,103 +143,102 @@ export const cancelGame = async (req, res) => {
     }
 }
 
-export const joinGame = async (req, res) => {
+export const getAllGames = async (req, res) => {
     try {
-        const gameId = req.params.gameId;
-        const userId = req.user._id;
-        const game = await Game.findById(gameId);
-
-        if (!game) {
-            return res.status(404).json({
-                success: false,
-                message: "Game not found"
-            })
-        }
-
-        if (["full", "completed", "cancelled"].includes(game.status)) {
-            return res.status(400).json({
-                success: false,
-                message: "This game is no longer accepting players",
-            });
-        }
-
-        if (game.currentPlayers.includes(userId)) {
-            return res.status(400).json({
-                success: false,
-                message: "You have already joined this game",
-            });
-        }
-
-        if (game.currentPlayers.length >= game.playersNeeded) {
-            game.status = "full";
-            await game.save();
-            return res.status(400).json({
-                success: false,
-                message: "This game is already full",
-            });
-        }
-        game.currentPlayers.push(userId);
-        await game.save();
+        const games = await Game.find()
+            .populate('creator', 'name email')
+            .populate('currentPlayers', 'name email profilePic')
+            .sort({ date: 1 });
 
         return res.status(200).json({
             success: true,
-            message: "You have successfully joined the game",
-            data: {
-                id: game._id,
-                sport: game.sport,
-                currentPlayers: game.currentPlayers,
-                status: game.status,
-            },
+            count: games.length,
+            data: games
         })
-
     } catch (error) {
-        console.error("Error joining game:", error);
-        res.status(500).json({
-            success: false,
-            message: "Server error joining game",
-            error: error.message,
-        });
-
+        console.error("Get all games error:", error)
+        return res.status(500).json({ message: "Server Error", error: error.message })
     }
-
 }
 
-export const leaveGame = async (req, res) => {
+export const getGameById = async (req, res) => {
     try {
         const gameId = req.params.gameId;
-        const userId = req.user._id;
-        const game = await Game.findById(gameId);
+
+        const game = await Game.findById(gameId)
+            .populate('creator', 'username email')
+            .populate('currentPlayers', 'username email');
+
         if (!game) {
             return res.status(404).json({
                 success: false,
                 message: "Game not found"
             })
         }
-        if (!game.currentPlayers.includes(userId)) {
-            return res.status(400).json({
-                success: false,
-                message: "you have not joined this game"
-            })
-        }
-        game.currentPlayers = game.currentPlayers.filter(
-            (player) => player.toString() !== userId.toString()
-        );
-        if (game.status === "full" && game.currentPlayers.length < game.playersNeeded) {
-            game.status = "open";
-        }
-        await game.save();
+
         return res.status(200).json({
             success: true,
-            message: "You have successfully ommited from this game",
+            data: game
         })
 
     } catch (error) {
-        console.error("Error joining game:", error);
-        res.status(500).json({
-            success: false,
-            message: "Server error joining game",
-            error: error.message,
-        });
+        console.error("Get game by id error:", error)
+        return res.status(500).json({ message: "Server Error", error: error.message })
+    }
+}
 
+export const getMyGames = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const games = await Game.find({
+            $or: [
+                { creator: userId },
+                { currentPlayers: currentPlayers.includes(userId) }
+            ]
+        })
+
+        return res.status(200).json({
+            success: true,
+            count: games.length,
+            data: games
+        })
+
+    } catch (error) {
+        console.error("Cancel game error:", error)
+        return res.status(500).json({ message: "Server Error", error: error.message })
+    }
+}
+
+export const getUpcomingGames = async (req, res) => {
+    try {
+        const games = await Game.find({
+            date: { $gt: new Date() }
+        })
+
+        return res.status(200).json({
+            success: true,
+            count: games.length,
+            data: games
+        })
+    } catch (error) {
+        console.error("Cancel game error:", error)
+        return res.status(500).json({ message: "Server Error", error: error.message })
+    }
+}
+
+export const getPastGames = async (req, res) => {
+    try {
+        const games = await Game.find({
+            date: { $lt: new Date() }
+        })
+
+        return res.status(200).json({
+            success: true,
+            count: games.length,
+            data: games
+        })
+    } catch (error) {
+        console.error("Cancel game error:", error)
+        return res.status(500).json({ message: "Server Error", error: error.message })
     }
 }
