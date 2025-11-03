@@ -1,4 +1,4 @@
-import Game from "../models/game.models";
+import Game from "../models/game.models.js";
 
 
 export const joinGame = async (req, res) => {
@@ -66,7 +66,6 @@ export const joinGame = async (req, res) => {
     }
 
 }
-
 export const leaveGame = async (req, res) => {
     try {
         const gameId = req.params.gameId;

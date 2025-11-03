@@ -1,6 +1,6 @@
 import Game from "../models/game.models.js";
 import Invitation from "../models/invitation.models.js";
-import User from "../models/user.models.js";
+import User from "../models/auth.models.js";
 
 export const sendInvitation = async (req, res) => {
     try {
@@ -360,4 +360,31 @@ export const cancelInvitation = async (req, res) => {
 }
 
 //get all invitations for a game
+export const getInvitationsForGame = async (req,res) => {
+    try {
+        const gameId = req.params;
+        const game = await Game.findById(gameId)
 
+        if(!game){
+            return res.status(401).json({message:"Game not Found"})
+        }
+
+        const invitations = await Invitation.findById({gameId})
+        .populate('senderId', 'name profilePic')
+        .populate('receiverId','name profilePic')
+        .sort({createdAt : -1})
+
+        return res.status(200).json({
+            success:true,
+            count:invitations.length,
+            data:invitations
+        })
+    } catch (error) {
+        
+         return res.status(500).json({
+            success: false,
+            message: "Server error fetching invitations for game",
+            error: error.message
+    });
+    }
+}
