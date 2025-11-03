@@ -1,5 +1,5 @@
-import cloudinary from "../lib/cloudinary"
-import User from "../models/auth.models"
+import cloudinary from "../lib/cloudinary.js"
+import User from "../models/auth.models.js"
 
 export const profileUpload = async (req, res) => {
     try {
@@ -54,7 +54,7 @@ export const updateProfile = async (req, res) => {
 
 }
 
-const setAvailability = async (req, res) => {
+export const setAvailability = async (req, res) => {
     try {
         const userId = req.user._id;
         const { availability } = req.body;
