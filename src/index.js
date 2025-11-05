@@ -10,11 +10,15 @@ import rating from './routes/ratingroutes.js'
 dotenv.config()
 const app=express()
 
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}
+));
 
 const PORT = process.env.PORT
 app.use(express.json())
-app.use('/api/user',user)
+app.use('/api/auth',user)
 app.use('/api/game',gameroutes)
 app.use('/api/invitation',invitation)
 app.use('/api/rating',rating)

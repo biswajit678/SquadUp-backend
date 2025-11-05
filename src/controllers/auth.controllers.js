@@ -74,7 +74,7 @@ export const getMyProfile = async (req, res) => {
     try {
         const userId = req.user._id;
 
-        const user = await User.findById({ userId })
+        const user = await User.findById(userId )
             .select("-password");
 
         if (!user) {
