@@ -18,7 +18,7 @@ app.use(cors({
 
 const PORT = process.env.PORT
 app.use(express.json())
-app.use('/api/auth',user)
+app.use('/api/user',user)
 app.use('/api/game',gameroutes)
 app.use('/api/invitation',invitation)
 app.use('/api/rating',rating)
