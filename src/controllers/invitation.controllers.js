@@ -270,12 +270,8 @@ export const rejectInvitation = async (req, res) => {
             error: error.message
         });
     }
-
-
 }
-
 //getmy invitation
-
 export const getMyInvitation = async (req, res) => {
     try {
         const userId = req.user._id;
@@ -310,9 +306,7 @@ export const getMyInvitation = async (req, res) => {
         });
     }
 }
-
 //cancel invitation
-
 export const cancelInvitation = async (req, res) => {
     try {
         const { invitationId } = req.params;

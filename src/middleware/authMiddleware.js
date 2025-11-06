@@ -4,8 +4,8 @@ import User from '../models/auth.models.js';
 export const protect = async (req, res, next) => {
     let token;
     try {
-        if (req.headers.Authorization && req.headers.Authorization.startswith('Bearee')) {
-            token = req.headers.Authorization.split(' ')[1];
+        if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+            token = req.headers.authorization.split(' ')[1];
         }
 
         if (!token) {
@@ -15,8 +15,8 @@ export const protect = async (req, res, next) => {
             });
         }
 
-        const decode = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await User.findById(decode.id).select('-password');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = await User.findById(decoded.id).select('-password');
 
         if (!req.user) {
             return res.status(401).json({
@@ -24,6 +24,7 @@ export const protect = async (req, res, next) => {
                 message: 'User not found'
             });
         }
+
         next();
     } catch (error) {
 
@@ -47,8 +48,5 @@ export const protect = async (req, res, next) => {
             success: false,
             message: 'Not authorized'
         });
-
     }
 }
-
-

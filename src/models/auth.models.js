@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true,
         lowercase: true,
-        index: true 
+        index: true
     },
     password: {
         type: String,
@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
         {
             name: {
                 type: String,
-                index: true 
+                index: true
             },
             skillLevel: {
                 type: String,
