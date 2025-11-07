@@ -4,7 +4,7 @@ import User from '../models/auth.models.js';
 export const protect = async (req, res, next) => {
     let token;
     try {
-        if (req.headers.authorization && req.headers.authorization.startsWith('Bearee')) {
+        if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
             token = req.headers.authorization.split(' ')[1];
         }
 
@@ -50,5 +50,3 @@ export const protect = async (req, res, next) => {
 
     }
 }
-
-
