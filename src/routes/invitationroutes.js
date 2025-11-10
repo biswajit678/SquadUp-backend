@@ -4,16 +4,16 @@ import { protect } from '../middleware/authMiddleware.js'
 
 const router = express.Router()
 
-router.post('/invitation/senderId',protect,sendInvitation)
+router.post('/senderId',protect,sendInvitation)
 
-router.post('/invitation/reciverId/accept',protect,acceptInvitation)
+router.post('/reciverId/accept',protect,acceptInvitation)
 
-router.post('/invitation/reciver/reject',protect,rejectInvitation)
+router.post('/reciver/reject',protect,rejectInvitation)
 
-router.get('/invitation/myInvitation',protect,getMyInvitation)  
+router.get('/myInvitation',protect,getMyInvitation)  
 
-router.put('/invitation/cancel',protect,cancelInvitation)
+router.put('/cancel',protect,cancelInvitation)
 
-router.get('/invitation/getAll',getInvitationsForGame)
+router.get('/getAll',getInvitationsForGame)
 
 export default router
