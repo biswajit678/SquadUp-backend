@@ -5,24 +5,24 @@ import { joinGame, leaveGame } from '../controllers/gameParticipate.controllers.
 
 const router = express.Router()
 
-router.post('/game/create',protect,createGame)
+router.post('/create',protect,createGame)
 
-router.put('/game/user/:gameId',protect,updateGame)
+router.put('/user/:gameId',protect,updateGame)
 
-router.get("/game/all",protect, getAllGames);
+router.get("/all",protect, getAllGames);
 
-router.get("/game/myGames",protect,getMyGames)
+router.get("/myGames",protect,getMyGames)
 
-router.get("/game/:gameId",protect, getGameById);
+router.get("/:gameId",protect, getGameById);
 
-router.put("/game/cancel/:gameId", protect, cancelGame)
+router.put("/cancel/:gameId", protect, cancelGame)
 
-router.get("/game/upcoming",protect,getUpcomingGames)
+router.get("/upcoming",protect,getUpcomingGames)
 
-router.get("/game/past",protect,getPastGames)
+router.get("/past",protect,getPastGames)
 
-router.put("/game/join",protect,joinGame)
+router.put("/join",protect,joinGame)
 
-router.put("/game/leaveGame/:gameId",protect,leaveGame)
+router.put("/leaveGame/:gameId",protect,leaveGame)
 
 export default router

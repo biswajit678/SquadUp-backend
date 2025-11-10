@@ -4,10 +4,10 @@ import { addRatings, averageRatings, getAllRating } from '../controllers/rating.
 
 const router = express.Router()
 
-router.post('/rating',protect,addRatings)
+router.post('/',protect,addRatings)
 
-router.get('/rating/all',protect,getAllRating)
+router.get('/all',protect,getAllRating)
 
-router.get('/router/avg',protect,averageRatings)
+router.get('/avg',protect,averageRatings)
 
 export default router
