@@ -11,9 +11,7 @@ router.put('/user/:gameId',protect,updateGame)
 
 router.get("/all",protect, getAllGames);
 
-router.get("/myGames",protect,getMyGames)
-
-router.get("/:gameId",protect, getGameById);
+router.get("/myGames",protect, getMyGames)
 
 router.put("/cancel/:gameId", protect, cancelGame)
 
@@ -24,5 +22,7 @@ router.get("/past",protect,getPastGames)
 router.put("/join",protect,joinGame)
 
 router.put("/leaveGame/:gameId",protect,leaveGame)
+
+router.get("/:gameId",protect, getGameById);
 
 export default router

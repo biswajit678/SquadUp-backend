@@ -190,12 +190,12 @@ export const getGameById = async (req, res) => {
 export const getMyGames = async (req, res) => {
     try {
         const userId = req.user._id;
-        const games = await Game.find({
+       const games = await Game.find({
             $or: [
-                { creator: userId },
-                { currentPlayers: currentPlayers.includes(userId) }
+                { creator: userId },               
+                { currentPlayers: { $in: [userId] } }  
             ]
-        })
+        });
 
         return res.status(200).json({
             success: true,
