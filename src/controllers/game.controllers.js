@@ -243,34 +243,4 @@ export const getPastGames = async (req, res) => {
         return res.status(500).json({ message: "Server Error", error: error.message })
     }
 }
-export const getPlayers = async (req, res) =>{
-    try {
-        const gameId = req.params.gameId
-        const userId = req.user._id
-        const user = await User.findById(userId)
-        if(!user){
-            res.status(401).json({
-                success:false,
-                message:"USer not found"
-            })
-        }
-        if(user._id.toString()===userId.toString()){
-            return res.status(401).json({
-                success:false,
-                message:"You cant see Yourself"
-            })
-        }
-        return res.status(200).json({
-            success:true,
-            message:"Players loaded successfully"
-        })
-        
-    } catch (error) {
-        console.log("Failed to load Players",error);
-         res.status(500).json({
-            success: false,
-            message: "Server error joining game",
-            error: error.message,
-        });
-    }
-}
+
