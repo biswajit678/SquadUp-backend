@@ -191,10 +191,10 @@ export const getGameById = async (req, res) => {
 export const getMyGames = async (req, res) => {
     try {
         const userId = req.user._id;
-       const games = await Game.find({
+        const games = await Game.find({
             $or: [
-                { creator: userId },               
-                { currentPlayers: { $in: [userId] } }  
+                { creator: userId },
+                { currentPlayers: { $in: [userId] } }
             ]
         });
 
