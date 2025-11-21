@@ -7,6 +7,7 @@ import gameroutes from './routes/gameroutes.js';
 import invitation from './routes/invitationroutes.js';
 import rating from './routes/ratingroutes.js';
 import players from './routes/playersroutes.js';
+import "./util/gameScheduler.js";
 
 dotenv.config()
 const app=express()
