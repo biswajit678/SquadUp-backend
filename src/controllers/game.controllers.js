@@ -99,6 +99,7 @@ export const updateGame = async (req, res) => {
         return res.status(500).json({ message: "Server Error", error: error.message })
     }
 }
+
 export const cancelGame = async (req, res) => {
     try {
         const { status } = req.body;
@@ -150,11 +151,19 @@ export const getAllGames = async (req, res) => {
             .populate('creator', 'name email')
             .populate('currentPlayers', 'name email profilePic')
             .sort({ date: 1 });
+        
+            const gamesWithCorrectStatus=games.map(game=>{
+                const gameObj=game.toObject();
+                const currentPlayerCount=gameObj.currentPlayers?.length || 0;
+
+                gameObj.status=currentPlayerCount >= gameObj.playersNeeded ? 'full' : 'open';
+                return gameObj;
+            })
 
         return res.status(200).json({
             success: true,
-            count: games.length,
-            data: games
+            count: gamesWithCorrectStatus.length,
+            data: gamesWithCorrectStatus
         })
     } catch (error) {
         console.error("Get all games error:", error)
