@@ -1,7 +1,7 @@
 import cron from "node-cron";
 import Game from "../models/game.models.js"; 
 
-cron.schedule("* * * * *", async () => {
+cron.schedule("0 0 * * *", async () => {
     try {
         const now = new Date();
 

@@ -19,7 +19,7 @@ router.get("/upcoming",protect,getUpcomingGames)
 
 router.get("/past",protect,getPastGames)
 
-router.put("/join",protect,joinGame)
+router.put("/join/:gameId",protect,joinGame)
 
 router.put("/leaveGame/:gameId",protect,leaveGame)
 

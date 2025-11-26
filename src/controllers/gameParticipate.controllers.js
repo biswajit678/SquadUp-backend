@@ -1,6 +1,5 @@
 import Game from "../models/game.models.js";
 
-
 export const joinGame = async (req, res) => {
     try {
         const gameId = req.params.gameId;
@@ -14,12 +13,14 @@ export const joinGame = async (req, res) => {
             })
         }
 
-        if (["full", "completed", "cancelled"].includes(game.status)) {
+        if (game.status?.toLowerCase() !== "open") {
             return res.status(400).json({
                 success: false,
-                message: "This game is no longer accepting players",
+                message: "This game is no longer accepting players"
             });
         }
+
+
 
         if (game.currentPlayers.includes(userId)) {
             return res.status(400).json({
@@ -36,6 +37,7 @@ export const joinGame = async (req, res) => {
                 message: "This game is already full",
             });
         }
+
         game.currentPlayers.push(userId);
 
         if (game.currentPlayers.length >= game.playersNeeded) {
@@ -66,6 +68,7 @@ export const joinGame = async (req, res) => {
     }
 
 }
+
 export const leaveGame = async (req, res) => {
     try {
         const gameId = req.params.gameId;
