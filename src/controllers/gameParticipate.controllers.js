@@ -20,7 +20,28 @@ export const joinGame = async (req, res) => {
             });
         }
 
+        const gameDate = new Date(game.date);
+        const startOfDay = new Date(gameDate.setHours(0, 0, 0, 0));
+        const endOfDay = new Date(gameDate.setHours(23, 59, 59, 999));
 
+        const existingGames = await Game.find({
+            _id: { $ne: gameId }, // Exclude the current game
+            $or: [
+                { creator: userId },
+                { currentPlayers: { $in: [userId] } }
+            ],
+            date: {
+                $gte: startOfDay,
+                $lte: endOfDay
+            }
+        });
+        
+        if (existingGames.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: "You already have a game scheduled on this day"
+            });
+        }
 
         if (game.currentPlayers.includes(userId)) {
             return res.status(400).json({

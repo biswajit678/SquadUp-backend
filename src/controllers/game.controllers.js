@@ -20,6 +20,27 @@ export const createGame = async (req, res) => {
             return res.status(400).json({ message: "You have missed Something" })
         }
 
+        const gameDate = new Date(date);
+        const startOfDay = new Date(gameDate.setHours(0, 0, 0, 0));
+        const endOfDay = new Date(gameDate.setHours(23, 59, 59, 999));
+
+        const existingGames = await Game.find({
+            $or: [
+                { creator: userId },
+                { currentPlayers: { $in: [userId] } }
+            ],
+            date: {
+                $gte: startOfDay,
+                $lte: endOfDay
+            }
+        });
+
+
+        if (existingGames.length > 0) {
+            return res.status(400).json({
+                message: "You already have a game scheduled on this day"
+            });
+        }
         const newgame = new Game({
             creator: userId,
             sport,
@@ -151,14 +172,14 @@ export const getAllGames = async (req, res) => {
             .populate('creator', 'name email')
             .populate('currentPlayers', 'name email profilePic')
             .sort({ date: 1 });
-        
-            const gamesWithCorrectStatus=games.map(game=>{
-                const gameObj=game.toObject();
-                const currentPlayerCount=gameObj.currentPlayers?.length || 0;
 
-                gameObj.status=currentPlayerCount >= gameObj.playersNeeded ? 'full' : 'open';
-                return gameObj;
-            })
+        const gamesWithCorrectStatus = games.map(game => {
+            const gameObj = game.toObject();
+            const currentPlayerCount = gameObj.currentPlayers?.length || 0;
+
+            gameObj.status = currentPlayerCount >= gameObj.playersNeeded ? 'full' : 'open';
+            return gameObj;
+        })
 
         return res.status(200).json({
             success: true,
