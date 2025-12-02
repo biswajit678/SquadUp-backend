@@ -197,8 +197,8 @@ export const getGameById = async (req, res) => {
         const gameId = req.params.gameId;
 
         const game = await Game.findById(gameId)
-            .populate('creator', 'username email')
-            .populate('currentPlayers', 'username email');
+            .populate('creator', 'name email profilePic')
+            .populate('currentPlayers', 'name email profilePic');
 
         if (!game) {
             return res.status(404).json({
