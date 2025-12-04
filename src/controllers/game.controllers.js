@@ -123,18 +123,8 @@ export const updateGame = async (req, res) => {
 
 export const cancelGame = async (req, res) => {
     try {
-        const { status } = req.body;
         const gameId = req.params.gameId;
         const userId = req.user._id;
-
-        const gameStatuses = ['open', 'full', 'completed', 'cancelled']
-
-        if (!gameStatuses.includes(status)) {
-            return res.status(400).json({
-                success: false,
-                message: "Not a valid status"
-            })
-        }
 
         const game = await Game.findById(gameId);
 
@@ -148,27 +138,43 @@ export const cancelGame = async (req, res) => {
         if (userId.toString() !== game.creator.toString()) {
             return res.status(403).json({
                 success: false,
-                message: "You don't have access to modify this game"
+                message: "You don't have access to cancel this game"
             })
         }
 
-        game.status = status;
+        // Check if game is already cancelled
+        if (game.status === 'cancelled') {
+            return res.status(400).json({
+                success: false,
+                message: "Game is already cancelled"
+            })
+        }
+
+        // Automatically set status to cancelled
+        game.status = 'cancelled';
         await game.save();
 
         return res.status(200).json({
             success: true,
-            message: `Game status updated to ${status}`
+            message: "Game cancelled successfully"
         })
 
     } catch (error) {
         console.error("Cancel game error:", error)
-        return res.status(500).json({ message: "Server Error", error: error.message })
+        return res.status(500).json({
+            success: false,
+            message: "Server Error",
+            error: error.message
+        })
     }
 }
 
 export const getAllGames = async (req, res) => {
     try {
-        const games = await Game.find()
+
+        const games = await Game.find({
+            status: { $ne: 'cancelled' }
+        })
             .populate('creator', 'name email')
             .populate('currentPlayers', 'name email profilePic')
             .sort({ date: 1 });
@@ -177,7 +183,10 @@ export const getAllGames = async (req, res) => {
             const gameObj = game.toObject();
             const currentPlayerCount = gameObj.currentPlayers?.length || 0;
 
-            gameObj.status = currentPlayerCount >= gameObj.playersNeeded ? 'full' : 'open';
+            if (gameObj.status !== 'cancelled' && gameObj.status !== 'completed') {
+                gameObj.status = currentPlayerCount >= gameObj.playersNeeded ? 'full' : 'open';
+            }
+
             return gameObj;
         })
 
@@ -188,7 +197,11 @@ export const getAllGames = async (req, res) => {
         })
     } catch (error) {
         console.error("Get all games error:", error)
-        return res.status(500).json({ message: "Server Error", error: error.message })
+        return res.status(500).json({
+            success: false,
+            message: "Server Error",
+            error: error.message
+        })
     }
 }
 
@@ -222,21 +235,40 @@ export const getMyGames = async (req, res) => {
     try {
         const userId = req.user._id;
         const games = await Game.find({
+            status: { $ne: 'cancelled' }, 
             $or: [
                 { creator: userId },
                 { currentPlayers: { $in: [userId] } }
             ]
+        })
+        .populate('creator', 'name email')
+        .populate('currentPlayers', 'name email profilePic')
+        .sort({ date: 1 });
+
+        const gamesWithCorrectStatus = games.map(game => {
+            const gameObj = game.toObject();
+            const currentPlayerCount = gameObj.currentPlayers?.length || 0;
+
+            if (gameObj.status !== 'cancelled' && gameObj.status !== 'completed') {
+                gameObj.status = currentPlayerCount >= gameObj.playersNeeded ? 'full' : 'open';
+            }
+            
+            return gameObj;
         });
 
         return res.status(200).json({
             success: true,
-            count: games.length,
-            data: games
+            count: gamesWithCorrectStatus.length,
+            data: gamesWithCorrectStatus
         })
 
     } catch (error) {
-        console.error("Cancel game error:", error)
-        return res.status(500).json({ message: "Server Error", error: error.message })
+        console.error("Get my games error:", error)
+        return res.status(500).json({ 
+            success: false,
+            message: "Server Error", 
+            error: error.message 
+        })
     }
 }
 
